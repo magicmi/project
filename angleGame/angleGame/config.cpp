@@ -45,11 +45,10 @@ bool gameConfig(string &szFileName)
 	const char *xAttribute;
 	const char *yAttribute;
 	const char *zAttribute;
-	const char *rhwAttribute;
 	const char *rAttribute;
 	const char *gAttribute;
 	const char *bAttribute;
-	float x,y,z,rhw;
+	float x,y,z;
 	int r,g,b;	
 	try{
 		string seperator="\\";
@@ -67,22 +66,19 @@ bool gameConfig(string &szFileName)
 			xAttribute=vertex->Attribute("x");
 			yAttribute=vertex->Attribute("y");
 			zAttribute=vertex->Attribute("z");
-			rhwAttribute=vertex->Attribute("rhw");
 			rAttribute=vertex->Attribute("r");
 			gAttribute=vertex->Attribute("g");
 			bAttribute=vertex->Attribute("b");
 			x=(float)atof(xAttribute);
 			y=(float)atof(yAttribute);
 			z=(float)atof(zAttribute);
-			rhw=(float)atof(rhwAttribute);
 			r=atoi(rAttribute);
 			g=atoi(gAttribute);
 			b=atoi(bAttribute);
-			angles[i].x=x;angles[i].y=y;angles[i].z=z;angles[i].rhw=rhw;
+			angles[i].x=x;angles[i].y=y;angles[i].z=z;
 			angles[i].color=D3DCOLOR_XRGB(r,g,b);	
 			vertex=vertex->NextSiblingElement();
 		}
-aSpeed=generateRandomSpeed();
 		//config the coordinates and color for demon
 		TiXmlElement *demon=angle->NextSiblingElement();
 		vertex=demon->FirstChildElement();
@@ -91,18 +87,23 @@ aSpeed=generateRandomSpeed();
 			xAttribute=vertex->Attribute("x");
 			yAttribute=vertex->Attribute("y");
 			zAttribute=vertex->Attribute("z");
-			rhwAttribute=vertex->Attribute("rhw");
 			rAttribute=vertex->Attribute("r");
 			gAttribute=vertex->Attribute("g");
 			bAttribute=vertex->Attribute("b");
 			x=(float)atof(xAttribute);
 			y=(float)atof(yAttribute);
 			z=(float)atof(zAttribute);
-			rhw=(float)atof(rhwAttribute);
 			r=atoi(rAttribute);
 			g=atoi(gAttribute);
 			b=atoi(bAttribute);
-			demons[i].x=x;demons[i].y=y;demons[i].z=z;demons[i].rhw=rhw;
+			for(int j=0;j<10;j++)
+			{
+				demonList[j][i].x=x;
+				demonList[j][i].y=y;
+				demonList[j][i].z=z;
+				demonList[j][i].color=D3DCOLOR_XRGB(r,g,b);
+			}
+			demons[i].x=x;demons[i].y=y;demons[i].z=z;
 			demons[i].color=D3DCOLOR_XRGB(r,g,b);	
 			vertex=vertex->NextSiblingElement();
 		}
@@ -115,23 +116,28 @@ aSpeed=generateRandomSpeed();
 			xAttribute=vertex->Attribute("x");
 			yAttribute=vertex->Attribute("y");
 			zAttribute=vertex->Attribute("z");
-			rhwAttribute=vertex->Attribute("rhw");
 			rAttribute=vertex->Attribute("r");
 			gAttribute=vertex->Attribute("g");
 			bAttribute=vertex->Attribute("b");
 			x=(float)atof(xAttribute);
 			y=(float)atof(yAttribute);
 			z=(float)atof(zAttribute);
-			rhw=(float)atof(rhwAttribute);
 			r=atoi(rAttribute);
 			g=atoi(gAttribute);
 			b=atoi(bAttribute);
-			elfs[i].x=x;elfs[i].y=y;elfs[i].z=z;elfs[i].rhw=rhw;
+			for(int j=0;j<10;j++)
+			{
+				elfList[j][i].x=x;
+				elfList[j][i].y=y;
+				elfList[j][i].z=z;
+				elfList[j][i].color=D3DCOLOR_XRGB(r,g,b);
+			}
+			elfs[i].x=x;elfs[i].y=y;elfs[i].z=z;
 			elfs[i].color=D3DCOLOR_XRGB(r,g,b);
 			vertex=vertex->NextSiblingElement();
 		}
 		eSpeed=generateRandomSpeed();
-		
+
 	}
 	catch(string &e)
 	{
@@ -144,10 +150,9 @@ SPEED generateRandomSpeed()
 {
 	SPEED speed;
 	srand(time(NULL));
-	float x,y,z;
+	float x,y;
 	x=(float)(rand()%10)/10.0f;
 	y=(float)(rand()%10)/10.0f;
-	z=0.5f;
-	speed.x=x;speed.y=y;speed.z=z;
+	speed.x=x;speed.y=y;
 	return speed;
 }

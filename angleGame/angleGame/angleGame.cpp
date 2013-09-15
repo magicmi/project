@@ -1,6 +1,7 @@
 #include<windows.h>
 #include<windowsx.h>
 #include<d3d9.h>
+#include <d3dx9.h>
 #include<string>
 #include <atlstr.h>
 #include "tinyxml.h"
@@ -10,10 +11,12 @@
 using namespace std;
 //include the Direct3D library file
 #pragma comment(lib,"d3d9.lib")
+#pragma comment(lib,"d3dx9.lib")
 //screen resolution
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
-#define CUSTOMFVF (D3DFVF_XYZRHW|D3DFVF_DIFFUSE)
+#define CUSTOMFVF (D3DFVF_XYZ|D3DFVF_DIFFUSE)
+#define ANGLESPEED 2.0f
 
 //the pointer to our Direct3D interface
 LPDIRECT3D9 d3d;
@@ -24,16 +27,25 @@ LPDIRECT3DVERTEXBUFFER9 demonBuffer;//the buffer to save vertex of demon
 IDirect3DIndexBuffer9* demonIndexBuffer;//the buffer to save index of demon's vertex
 LPDIRECT3DVERTEXBUFFER9 elfBuffer;
 IDirect3DIndexBuffer9* elfIndexBuffer;
+SPEED dSpeed;
+SPEED eSpeed;
 
 CUSTOMVETIX angles[3];
 CUSTOMVETIX demons[4];
 CUSTOMVETIX elfs[4];
-void initData(void);
+CUSTOMVETIX demonList[10][4];
+CUSTOMVETIX elfList[10][4];
+void initData(void);//initialize the data for game
 void initGraphics(void);//initialize the primitive to be drawn
 void initD3d(HWND hWnd);//setup and initializes Direct3D
 void renderFrame(void);//render a single frame
 void cleanD3d(void);//close Direct3D and release memory
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam,LPARAM lParam);
+void rightMove(void);//angle go to right
+void leftMove(void);//angle go to left
+void upMove(void);//angle go to up
+void downMove(void);//angle go to down
+void downMoveForElf(CUSTOMVETIX elft[]);
 int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,int nCmdShow)
 {
 	HWND hWnd;
@@ -79,6 +91,33 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam,LPARAM lParam
 			return 0;
 		}
 		break;
+	case WM_KEYDOWN:
+		{
+			switch (wParam)
+			{
+			case VK_RIGHT: 
+				{
+					rightMove();
+				}
+				break;
+			case VK_LEFT: 
+				{
+					leftMove();
+				}
+				break;
+			case VK_UP: 
+				{
+					upMove();
+				}
+				break;
+			case VK_DOWN: 
+				{
+					downMove();
+				}
+				break;
+			}
+		}
+		break;
 	}
 	return DefWindowProc(hWnd,message,wParam,lParam);//process the other message
 }
@@ -99,10 +138,12 @@ void initD3d(HWND hWnd)
 		&d3ddev);
 	initData();
 	initGraphics();
+	d3ddev->SetRenderState(D3DRS_LIGHTING,FALSE);
 }
 //initialize the primitive to be drawn
 void initGraphics()
 {
+	//init angle
 	d3ddev->CreateVertexBuffer(3*sizeof(CUSTOMVETIX),0,CUSTOMFVF,D3DPOOL_MANAGED,&angleBuffer,NULL);
 	VOID** pVoid;
 	angleBuffer->Lock(0,0,(void**)&pVoid,0);
@@ -143,10 +184,24 @@ void renderFrame()
 		D3DCOLOR_XRGB(0,0,0),1.0f,0);
 	d3ddev->BeginScene();//do 3d rendering on the back buffer here
 	d3ddev->SetFVF(CUSTOMFVF);
-
+	//draw the angle
 	d3ddev->SetStreamSource(0,angleBuffer,0,sizeof(CUSTOMVETIX));
 	d3ddev->DrawPrimitive(D3DPT_TRIANGLELIST,0,1);
 	//draw the demon
+	D3DXMATRIX demonMatTranslate;
+	static float demonx=0.0f;
+	static float demony=0.0f;
+	//demonx-=dSpeed.x;
+	//demony-=dSpeed.y;
+	D3DXMatrixTranslation(&demonMatTranslate,demonx,demony,0.0f);
+	d3ddev->SetTransform(D3DTS_WORLD,&demonMatTranslate);
+	D3DXMATRIX demonMatView;
+	D3DXMatrixLookAtLH(&demonMatView,&D3DXVECTOR3(0.0f,0.0f,100.0f),
+		&D3DXVECTOR3(0.0f,0.0f,0.0f),&D3DXVECTOR3(0.0f,1.0f,0.0f));
+	d3ddev->SetTransform(D3DTS_VIEW,&demonMatView);
+	D3DXMATRIX demonMatProject;
+	D3DXMatrixPerspectiveFovLH(&demonMatProject,D3DXToRadian(60),(FLOAT)SCREEN_WIDTH/(FLOAT)SCREEN_HEIGHT,1.0f,100.0f);
+	d3ddev->SetTransform(D3DTS_PROJECTION,&demonMatProject);//
 	d3ddev->SetStreamSource(0,demonBuffer,0,sizeof(CUSTOMVETIX));
 	d3ddev->SetIndices(demonIndexBuffer);
 	d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST,0,0,4,0,2);
@@ -154,6 +209,15 @@ void renderFrame()
 	d3ddev->SetStreamSource(0,elfBuffer,0,sizeof(CUSTOMVETIX));
 	d3ddev->SetIndices(elfIndexBuffer);
 	d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST,0,0,4,0,2);
+	/*static int i=0;
+	i++;
+	for(int j=0;j<i;j++)
+	{
+	downMoveForElf(elfList[j]);
+	d3ddev->SetStreamSource(0,elfBuffer,0,sizeof(CUSTOMVETIX));//use timer 
+	d3ddev->SetIndices(elfIndexBuffer);
+	d3ddev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST,0,0,4,0,2);
+	}*/
 	d3ddev->EndScene();
 	d3ddev->Present(NULL,NULL,NULL,NULL);//display the created frame on the screen
 }
@@ -169,4 +233,64 @@ void initData()
 {
 	string fileName("config2.xml");
 	gameConfig(fileName);
+}
+
+void rightMove()
+{
+	for(int i=0;i<3;i++)
+	{
+		angles[i].x-=ANGLESPEED;
+	}
+	VOID** pVoid;
+	angleBuffer->Lock(0,0,(void**)&pVoid,0);
+	memcpy(pVoid,angles,sizeof(angles));
+	angleBuffer->Unlock();
+}
+
+void leftMove()
+{
+	for(int i=0;i<3;i++)
+	{
+		angles[i].x+=ANGLESPEED;
+	}
+	VOID** pVoid;
+	angleBuffer->Lock(0,0,(void**)&pVoid,0);
+	memcpy(pVoid,angles,sizeof(angles));
+	angleBuffer->Unlock();
+}
+
+void upMove()
+{
+	for(int i=0;i<3;i++)
+	{
+		angles[i].y+=ANGLESPEED;
+	}
+	VOID** pVoid;
+	angleBuffer->Lock(0,0,(void**)&pVoid,0);
+	memcpy(pVoid,angles,sizeof(angles));
+	angleBuffer->Unlock();
+}
+
+void downMove()
+{
+	for(int i=0;i<3;i++)
+	{
+		angles[i].y-=ANGLESPEED;
+	}
+	VOID** pVoid;
+	angleBuffer->Lock(0,0,(void**)&pVoid,0);
+	memcpy(pVoid,angles,sizeof(angles));
+	angleBuffer->Unlock();
+}
+
+void downMoveForElf(CUSTOMVETIX elft[])
+{
+	for(int i=0;i<3;i++)
+	{
+		elft[i].y-=ANGLESPEED;
+	}
+	VOID** pVoid;
+	elfBuffer->Lock(0,0,(void**)&pVoid,0);
+	memcpy(pVoid,elft,sizeof(elft));
+	elfBuffer->Unlock();
 }
