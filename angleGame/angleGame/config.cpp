@@ -48,6 +48,9 @@ bool gameConfig(string &szFileName)
 	const char *rAttribute;
 	const char *gAttribute;
 	const char *bAttribute;
+    CUSTOMVETIX a[3];
+	CUSTOMVETIX d[4];
+	CUSTOMVETIX e[4];
 	float x,y,z;
 	int r,g,b;	
 	try{
@@ -58,8 +61,8 @@ bool gameConfig(string &szFileName)
 		TiXmlDocument *myDocument = new TiXmlDocument(fullPath.c_str());
 		myDocument->LoadFile();
 		TiXmlElement *RootElement = myDocument->RootElement();
-		TiXmlElement *angle = RootElement->FirstChildElement();
-		TiXmlElement *vertex = angle->FirstChildElement();
+		TiXmlElement *anglep = RootElement->FirstChildElement();
+		TiXmlElement *vertex = anglep->FirstChildElement();
 		//config the coordinates and color for angle
 		for(int i=0;i<=2;i++)
 		{
@@ -75,13 +78,14 @@ bool gameConfig(string &szFileName)
 			r=atoi(rAttribute);
 			g=atoi(gAttribute);
 			b=atoi(bAttribute);
-			angles[i].x=x;angles[i].y=y;angles[i].z=z;
-			angles[i].color=D3DCOLOR_XRGB(r,g,b);	
+			a[i].x=x;a[i].y=y;a[i].z=z;
+			a[i].color=D3DCOLOR_XRGB(r,g,b);
 			vertex=vertex->NextSiblingElement();
 		}
+		angle1.init(a);
 		//config the coordinates and color for demon
-		TiXmlElement *demon=angle->NextSiblingElement();
-		vertex=demon->FirstChildElement();
+		TiXmlElement *demonp=anglep->NextSiblingElement();
+		vertex=demonp->FirstChildElement();
 		for(int i=0;i<=3;i++)
 		{
 			xAttribute=vertex->Attribute("x");
@@ -96,21 +100,18 @@ bool gameConfig(string &szFileName)
 			r=atoi(rAttribute);
 			g=atoi(gAttribute);
 			b=atoi(bAttribute);
-			for(int j=0;j<10;j++)
-			{
-				demonList[j][i].x=x;
-				demonList[j][i].y=y;
-				demonList[j][i].z=z;
-				demonList[j][i].color=D3DCOLOR_XRGB(r,g,b);
-			}
-			demons[i].x=x;demons[i].y=y;demons[i].z=z;
-			demons[i].color=D3DCOLOR_XRGB(r,g,b);	
+			
+			d[i].x=x;d[i].y=y;d[i].z=z;
+			d[i].color=D3DCOLOR_XRGB(r,g,b);	
 			vertex=vertex->NextSiblingElement();
 		}
-		dSpeed=generateRandomSpeed();
+		for(int i=0;i<NUM;i++){
+			demons[i].init(d,generateRandomSpeed());
+		}
+		//dSpeed=generateRandomSpeed();
 		//config the coordinates and color for elf
-		TiXmlElement *elf=demon->NextSiblingElement();
-		vertex=elf->FirstChildElement();
+		TiXmlElement *elfp=demonp->NextSiblingElement();
+		vertex=elfp->FirstChildElement();
 		for(int i=0;i<=3;i++)
 		{
 			xAttribute=vertex->Attribute("x");
@@ -125,18 +126,14 @@ bool gameConfig(string &szFileName)
 			r=atoi(rAttribute);
 			g=atoi(gAttribute);
 			b=atoi(bAttribute);
-			for(int j=0;j<10;j++)
-			{
-				elfList[j][i].x=x;
-				elfList[j][i].y=y;
-				elfList[j][i].z=z;
-				elfList[j][i].color=D3DCOLOR_XRGB(r,g,b);
-			}
-			elfs[i].x=x;elfs[i].y=y;elfs[i].z=z;
-			elfs[i].color=D3DCOLOR_XRGB(r,g,b);
+			
+			e[i].x=x;e[i].y=y;e[i].z=z;
+			e[i].color=D3DCOLOR_XRGB(r,g,b);
 			vertex=vertex->NextSiblingElement();
 		}
-		eSpeed=generateRandomSpeed();
+		for(int i=0;i<ELFNUM;i++){
+			elfs[i].init(e,generateRandomSpeed());
+		}
 
 	}
 	catch(string &e)
@@ -149,10 +146,16 @@ bool gameConfig(string &szFileName)
 SPEED generateRandomSpeed()
 {
 	SPEED speed;
-	srand(time(NULL));
+	//make the seed subtle by hardware precision counter
+	LARGE_INTEGER seed;
+	QueryPerformanceFrequency(&seed);
+	QueryPerformanceCounter(&seed);
+	srand(seed.QuadPart);
+	//srand(time(NULL));
 	float x,y;
-	x=(float)(rand()%10)/10.0f;
-	y=(float)(rand()%10)/10.0f;
+	float i=-1;
+	x=(float)(rand()%10)/100.0f*pow(i,rand()%2+1);
+	y=(float)(rand()%10)/100.0f*pow(i,rand()%2+1);
 	speed.x=x;speed.y=y;
 	return speed;
 }

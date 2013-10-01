@@ -171,11 +171,27 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\actor.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\angle.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\angleGame.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\config.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\demon.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\elf.cpp"
 				>
 			</File>
 			<File
@@ -201,7 +217,27 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\actor.h"
+				>
+			</File>
+			<File
+				RelativePath=".\angle.h"
+				>
+			</File>
+			<File
 				RelativePath=".\config.h"
+				>
+			</File>
+			<File
+				RelativePath=".\dataStructure.h"
+				>
+			</File>
+			<File
+				RelativePath=".\demon.h"
+				>
+			</File>
+			<File
+				RelativePath=".\elf.h"
 				>
 			</File>
 			<File
@@ -219,6 +255,10 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 		</Filter>
+		<File
+			RelativePath=".\ClassDiagram1.cd"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
