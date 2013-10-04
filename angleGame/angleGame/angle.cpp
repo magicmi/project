@@ -1,109 +1,97 @@
 #include "angle.h"
-angle::angle()
-{
 
+angle::angle(void)
+{
+	this->index=new WORD[3];
+	WORD tindex[]={0,1,2};
+	memcpy(this->index,tindex,3*sizeof(WORD));
+	this->indexNum=3;
+	this->vertexNum=3;
+	this->triNum=1;
+	this->a=new CUSTOMVETIX[vertexNum];
+	this->b=new CUSTOMVETIX[vertexNum];
+	this->isLive=true;
+	colorAble=true;
 }
 
 angle::~angle(void)
 {
 }
 
-void angle::init(CUSTOMVETIX a[])
-{
-	for(int i=0;i<3;i++)
-	{
-		(this->a[i]).x=a[i].x;
-		(this->a[i]).y=a[i].y;
-		(this->a[i]).z=a[i].z;
-		(this->a[i]).color=a[i].color;
-	}
-}
-
-void angle::createBuffer(LPDIRECT3DDEVICE9 d3ddev){
-	d3ddev->CreateVertexBuffer(3*sizeof(CUSTOMVETIX),0,CUSTOMFVF,D3DPOOL_MANAGED,&buffer,NULL);
-	VOID** pVoid;
-	buffer->Lock(0,0,(void**)&pVoid,0);
-	memcpy(pVoid,a,sizeof(a));
-	buffer->Unlock();
-}
-
-void angle::Render(LPDIRECT3DDEVICE9 d3ddev)
-{
-	d3ddev->SetStreamSource(0,buffer,0,sizeof(CUSTOMVETIX));
-	d3ddev->DrawPrimitive(D3DPT_TRIANGLELIST,0,1);
-}
-
-void angle::Update()
-{
-	VOID** pVoid;
-	buffer->Lock(0,0,(void**)&pVoid,0);
-	memcpy(pVoid,a,sizeof(a));
-	buffer->Unlock();
-}
-
 void angle::rightMove(float elapsedTime){
-	if(a[2].x<=(-XSCOPE)){
-		return;
-	}
-	if((a[2].x-ANGLESPEED*elapsedTime)<(-XSCOPE)){
-		a[2].x=-XSCOPE;
-		a[1].x=-XSCOPE+6;
-		a[0].x=-XSCOPE+6;
-		return;
-	}
-	for(int i=0;i<3;i++)
-	{
-          a[i].x-=ANGLESPEED*elapsedTime;
+	if(this->isLive==true){
+		if(this->position.x-radius<=(-XSCOPE)){
+			return;
+		}
+		if(this->position.x-radius-ANGLESPEED*elapsedTime<(-XSCOPE)){
+			this->position.x=-XSCOPE+radius;
+			return;
+		}
+		this->position.x-=ANGLESPEED*elapsedTime;
 	}
 }
 
 void angle::leftMove(float elapsedTime){
-	if(a[0].x>=XSCOPE)
-	{
-		return;
-	}
-	if((a[0].x+ANGLESPEED*elapsedTime)>XSCOPE){
-		a[0].x=XSCOPE;
-		a[1].x=XSCOPE;
-		a[2].x=XSCOPE-6;
-		return;
-	}
-	for(int i=0;i<3;i++)
-	{
-		a[i].x+=ANGLESPEED*elapsedTime;
+	if(this->isLive==true){
+		if(this->position.x+radius>=(XSCOPE)){
+			return;
+		}
+		if(this->position.x+radius+ANGLESPEED*elapsedTime>XSCOPE){
+			this->position.x=XSCOPE-radius;
+			return;
+		}
+		this->position.x+=ANGLESPEED*elapsedTime;
 	}
 }
 
 void angle::upMove(float elapsedTime){
-	if(a[1].y>=YSCOPE)
-	{
-       return;
-	}
-	if((a[1].y+ANGLESPEED*elapsedTime)>YSCOPE){
-		a[1].y=YSCOPE;
-		a[0].y=YSCOPE-6;
-		a[2].y=YSCOPE-3;
-		return;
-	}
-	for(int i=0;i<3;i++)
-	{
-		a[i].y+=ANGLESPEED*elapsedTime;
+	if(this->isLive==true){
+		if(this->position.y+radius>=YSCOPE){
+			return;
+		}
+		if(this->position.y+radius+ANGLESPEED*elapsedTime>YSCOPE){
+			this->position.y=YSCOPE-radius;
+			return;
+		}
+		this->position.y+=ANGLESPEED*elapsedTime;
 	}
 }
 
 void angle::downMove(float elapsedTime){
-	if(a[0].y<=(-YSCOPE))
-	{
-		return;
+	if(this->isLive==true){
+		if(this->position.y-radius<=(-YSCOPE)){
+			return;
+		}
+		if(this->position.y-radius-ANGLESPEED*elapsedTime<(-YSCOPE)){
+			this->position.y=-YSCOPE+radius;
+			return;
+		}
+		this->position.y-=ANGLESPEED*elapsedTime;
 	}
-	if((a[0].y-ANGLESPEED*elapsedTime)<(-YSCOPE)){
-		a[0].y=-YSCOPE;
-		a[1].y=-YSCOPE+6;
-		a[2].y=-YSCOPE+3;
-		return;
+}
+
+void angle::expand(){
+	for(int i=0;i<this->vertexNum;i++){
+		this->a[i].x*=2.0f;
+		this->a[i].y*=2.0f;
+		this->a[i].z*=2.0f;
 	}
-	for(int i=0;i<3;i++)
-	{
-		a[i].y-=ANGLESPEED*elapsedTime;
+}
+
+void angle::changeColor(){
+	if(colorAble==true){
+		DWORD tempColor=(this->a[0].color);
+		for(int i=0;i<this->vertexNum-1;i++){
+			this->a[i].color=this->a[i+1].color;
+		}
+		this->a[2].color=tempColor;
 	}
+}
+
+void angle::changeColorAble(bool flag){
+	colorAble=flag;
+}
+
+bool angle::getColorInfo(){
+	return colorAble;
 }

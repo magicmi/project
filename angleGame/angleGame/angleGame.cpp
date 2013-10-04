@@ -24,12 +24,16 @@ LPDIRECT3D9 d3d;
 //the pointer to the device class
 LPDIRECT3DDEVICE9 d3ddev;
 
-SPEED dSpeed;
-SPEED eSpeed;
-angle angle1;
+angle *angle1;
+demon *demons[NUM];
+elf *elfs[ELFNUM];
 float frameTime;
-demon demons[NUM];
-elf elfs[ELFNUM];
+bool isWin=false;
+bool isInvincible=true;
+int fadeIndex=0; 
+int expandTime=0;
+int timerNum=0;
+UINT_PTR timer1;
 
 void initData(void);//initialize the data for game
 void initGraphics(void);//initialize the primitive to be drawn
@@ -41,8 +45,9 @@ void rightMove(void);//angle go to right
 void leftMove(void);//angle go to left
 void upMove(void);//angle go to up
 void downMove(void);//angle go to down
-void downMoveForElf(CUSTOMVETIX elft[]);
 void updateFrame(float elapsedTime);
+void collision();
+
 int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,int nCmdShow)
 {
 	HWND hWnd;
@@ -79,9 +84,10 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,i
 			Sleep(0);
 			continue;
 		}
-        frameTime=(curTime-updateTimer)*0.1f;
+		frameTime=(curTime-updateTimer)*0.1f;
 		updateTimer=curTime;
 		updateFrame(frameTime);
+		collision();
 		renderFrame();
 	}
 	cleanD3d();
@@ -97,33 +103,39 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam,LPARAM lParam
 			return 0;
 		}
 		break;
-	//case WM_KEYUP:
+	case WM_TIMER:
+		{		
+			angle1->changeColorAble(false);
+			isInvincible=false;
+			KillTimer(hWnd,timer1);
 
+		}
+		break;
 	case WM_KEYDOWN:
 		{
 			if(KEY_DOWN(VK_UP) && KEY_DOWN(VK_LEFT))
 			{
-				angle1.upMove(frameTime);
-				angle1.leftMove(frameTime);
-				angle1.Update();
+				angle1->upMove(frameTime);
+				angle1->leftMove(frameTime);
+				angle1->Update();
 				break;
 			}
 			if(KEY_DOWN(VK_UP) && KEY_DOWN(VK_RIGHT)){
-				angle1.upMove(frameTime);
-				angle1.rightMove(frameTime);
-				angle1.Update();
+				angle1->upMove(frameTime);
+				angle1->rightMove(frameTime);
+				angle1->Update();
 				break;
 			}
 			if(KEY_DOWN(VK_DOWN) && KEY_DOWN(VK_RIGHT)){
-				angle1.downMove(frameTime);
-				angle1.rightMove(frameTime);
-				angle1.Update();
+				angle1->downMove(frameTime);
+				angle1->rightMove(frameTime);
+				angle1->Update();
 				break;
 			}
 			if(KEY_DOWN(VK_DOWN) && KEY_DOWN(VK_LEFT)){
-				angle1.downMove(frameTime);
-				angle1.leftMove(frameTime);
-				angle1.Update();
+				angle1->downMove(frameTime);
+				angle1->leftMove(frameTime);
+				angle1->Update();
 				break;
 			}
 			if(KEY_DOWN(VK_DOWN)){
@@ -165,17 +177,19 @@ void initD3d(HWND hWnd)
 	initData();
 	initGraphics();
 	d3ddev->SetRenderState(D3DRS_LIGHTING,FALSE);
+	int aa=SetTimer(hWnd,timer1,3000,NULL);
 }
 //initialize the primitive to be drawn
 void initGraphics()
 {
 	//init angle, demon, elf
-	angle1.createBuffer(d3ddev);
+
+	angle1->createBuffer(d3ddev);
 	for(int i=0;i<NUM;i++){
-		demons[i].createBuffer(d3ddev);
+		demons[i]->createBuffer(d3ddev);
 	}
 	for(int i=0;i<ELFNUM;i++){
-		elfs[i].createBuffer(d3ddev);
+		elfs[i]->createBuffer(d3ddev);
 	}
 }
 
@@ -199,15 +213,40 @@ void renderFrame()
 	D3DXMatrixPerspectiveFovLH(&matProject,D3DXToRadian(60),(FLOAT)SCREEN_WIDTH/(FLOAT)SCREEN_HEIGHT,1.0f,100.0f);
 	d3ddev->SetTransform(D3DTS_PROJECTION,&matProject);//
 
-	angle1.Render(d3ddev);
+	angle1->Render(d3ddev);
 	for(int i=0;i<NUM;i++){
-		demons[i].Render(d3ddev);
+		if(isWin==true&&i==fadeIndex&&demons[i]->getLiveInfo()){
+			demons[fadeIndex]->setDeath();
+			demons[fadeIndex]->Render(d3ddev);
+			continue;
+		}
+		demons[i]->Render(d3ddev);
 	}
 	for(int i=0;i<ELFNUM;i++){
-		elfs[i].Render(d3ddev);
+		elfs[i]->Render(d3ddev);
 	}
 	d3ddev->EndScene();
 	d3ddev->Present(NULL,NULL,NULL,NULL);//display the created frame on the screen
+	if(isWin==true){
+		if(fadeIndex<NUM){
+			fadeIndex++;
+			Sleep(200);
+		}
+		if(fadeIndex==NUM){
+			if(expandTime<3){
+				angle1->expand();
+				expandTime++;
+				Sleep(200);
+				if(expandTime==3){
+					return;
+				}
+				angle1->Update();
+				renderFrame();
+			}
+			return;
+		}
+		renderFrame();
+	}
 }
 
 void cleanD3d()
@@ -218,46 +257,79 @@ void cleanD3d()
 
 void initData()
 {
+	angle1=new angle;
+	for(int i=0;i<NUM;i++){
+		demons[i]=new demon;
+	}
+	for(int i=0;i<ELFNUM;i++){
+		elfs[i]=new elf;
+	}
 	string fileName("config2.xml");
-	gameConfig(fileName);
+	gameConfig(fileName,angle1,demons,elfs);
 }
 
 void rightMove()
 {
-	angle1.rightMove(frameTime);
-	angle1.Update();
+	angle1->rightMove(frameTime);
+	angle1->Update();
 }
 
 void leftMove()
 {
-	angle1.leftMove(frameTime);
-	angle1.Update();
+	angle1->leftMove(frameTime);
+	angle1->Update();
 }
 
 void upMove()
 {
-	angle1.upMove(frameTime);
-	angle1.Update();
+	angle1->upMove(frameTime);
+	angle1->Update();
 }
 
 void downMove()
 {
-	angle1.downMove(frameTime);
-	angle1.Update();
-}
-
-void downMoveForElf(CUSTOMVETIX elft[])
-{
-
+	angle1->downMove(frameTime);
+	angle1->Update();
 }
 
 void updateFrame(float elapsedTime){
-	for(int i=0;i<NUM;i++){
-		demons[i].move(elapsedTime);
-		demons[i].Update();
+	if(angle1->getLiveInfo()){
+		if(angle1->getColorInfo()){
+			angle1->changeColor();
+			angle1->Update();
+			angle1->Render(d3ddev);
+		}
+		for(int i=0;i<NUM;i++){
+			demons[i]->move(elapsedTime);
+			demons[i]->Update();
+		}
+		for(int i=0;i<ELFNUM;i++){
+			elfs[i]->move(elapsedTime);
+			elfs[i]->Update();
+		}
 	}
-	for(int i=0;i<ELFNUM;i++){
-		elfs[i].move(elapsedTime);
-		elfs[i].Update();
+}
+
+void collision(){
+	static int collectNum=0;
+	if(angle1->getLiveInfo()==true){
+		for(int i=0;i<NUM;i++){
+			if(angle1->isCollided(demons[i])){
+				if(isInvincible==false){
+					angle1->setDeath();
+				}
+			}
+		}
+		for(int i=0;i<ELFNUM;i++){
+			if(elfs[i]->getLiveInfo()==true){
+				if(angle1->isCollided(elfs[i])){
+					elfs[i]->setDeath();
+					collectNum++;
+					if(collectNum-ELFNUM==0){
+						isWin=true;
+					}
+				}
+			}
+		}
 	}
 }

@@ -1,19 +1,22 @@
 <models>
-    <angle ID="1">
-        <vertex ID="0" x="70.0f" y="-3.0f" z="0.0f" r="0" g="0" b="255"></vertex>
-		<vertex ID="1" x="70.0f" y="3.0f" z="0.0f" r="0" g="255" b="0"></vertex>
-	    <vertex ID="2" x="64.0f" y="0.0f" z="0.0f" r="255" g="0" b="0"></vertex>
+    <angle ID="1" radius="3.0f">
+	    <position ID="4" x="65.0f" y="0.0f" z="0.0f"></position>
+        <vertex ID="0" x="1.8f" y="-2.4f" z="0.0f" r="0" g="0" b="255"></vertex>
+		<vertex ID="1" x="1.8f" y="2.4f" z="0.0f" r="0" g="255" b="0"></vertex>
+	    <vertex ID="2" x="-3.0f" y="0.0f" z="0.0f" r="255" g="0" b="0"></vertex>
     </angle>
-	<demon ID="2">
-        <vertex ID="0" x="-70.0f" y="3.0f" z="0.0f" r="255" g="255" b="255"></vertex>
-	    <vertex ID="1" x="-64.0f" y="3.0f" z="0.0f" r="255" g="255" b="255"></vertex>
-	    <vertex ID="2" x="-67.0f" y="0.0f" z="0.0f"  r="255" g="255" b="255"></vertex>
-	    <vertex ID="3" x="-67.0f" y="6.0f" z="0.0f" r="255" g="255" b="255"></vertex>
+	<demon ID="2" radius="3.0f">
+	    <position ID="4" x="-67.0f" y="0.0f" z="0.0f"></position>
+        <vertex ID="0" x="-3.0f" y="0.0f" z="0.0f" r="255" g="255" b="255"></vertex>
+	    <vertex ID="1" x="3.0f" y="0.0f" z="0.0f" r="255" g="255" b="255"></vertex>
+	    <vertex ID="2" x="0.0f" y="-3.0f" z="0.0f"  r="255" g="255" b="255"></vertex>
+	    <vertex ID="3" x="0.0f" y="3.0f" z="0.0f" r="255" g="255" b="255"></vertex>
     </demon>
-    <elf ID="3">
-        <vertex ID="0" x="-64.0f" y="-40.0f" z="0.0f" r="0" g="255" b="0"></vertex>
-	    <vertex ID="1" x="-66.0f" y="-42.0f" z="0.0f" r="0" g="255" b="0"></vertex>
-	    <vertex ID="2" x="-66.0f" y="-40.0f" z="0.0f" r="0" g="255" b="0"></vertex>
-	    <vertex ID="3" x="-64.0f" y="-42.0f" z="0.0f" r="0" g="255" b="0"></vertex>
+    <elf ID="3" radius="2e0.5f">
+	    <position ID="4" x="-64.0f" y="-40.0f" z="0.0f"></position>
+        <vertex ID="0" x="1.0f" y="1.0f" z="0.0f" r="0" g="255" b="0"></vertex>
+	    <vertex ID="1" x="-1.0f" y="-1.0f" z="0.0f" r="0" g="255" b="0"></vertex>
+	    <vertex ID="2" x="-1.0f" y="1.0f" z="0.0f" r="0" g="255" b="0"></vertex>
+	    <vertex ID="3" x="1.0f" y="-1.0f" z="0.0f" r="0" g="255" b="0"></vertex>
     </elf>
 </models>

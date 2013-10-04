@@ -37,10 +37,9 @@ CString getAppPath()
 	CString strModulePath(modulePath);
 	strModulePath=strModulePath.Left(strModulePath.ReverseFind(_T('\\')));
 	return strModulePath;
-
 }
 
-bool gameConfig(string &szFileName)
+bool gameConfig(string &szFileName,angle* angle1,demon* demons[],elf* elfs[])
 {
 	const char *xAttribute;
 	const char *yAttribute;
@@ -53,6 +52,8 @@ bool gameConfig(string &szFileName)
 	CUSTOMVETIX e[4];
 	float x,y,z;
 	int r,g,b;	
+	float radius;
+	POSITION p;
 	try{
 		string seperator="\\";
 		//string fullPath = getAppPath().GetBuffer(0)+seperator+szFileName;
@@ -62,7 +63,10 @@ bool gameConfig(string &szFileName)
 		myDocument->LoadFile();
 		TiXmlElement *RootElement = myDocument->RootElement();
 		TiXmlElement *anglep = RootElement->FirstChildElement();
+		radius=(float)atof(anglep->Attribute("radius"));
 		TiXmlElement *vertex = anglep->FirstChildElement();
+		p=generatePosition(vertex);
+		vertex=vertex->NextSiblingElement();
 		//config the coordinates and color for angle
 		for(int i=0;i<=2;i++)
 		{
@@ -82,10 +86,14 @@ bool gameConfig(string &szFileName)
 			a[i].color=D3DCOLOR_XRGB(r,g,b);
 			vertex=vertex->NextSiblingElement();
 		}
-		angle1.init(a);
+		//angle tangle();
+		angle1->init(generateRandomSpeed(),a,angle1->getVertexNum(),p,radius);
 		//config the coordinates and color for demon
 		TiXmlElement *demonp=anglep->NextSiblingElement();
+		radius=(float)atof(demonp->Attribute("radius"));
 		vertex=demonp->FirstChildElement();
+        p=generatePosition(vertex);
+		vertex=vertex->NextSiblingElement();
 		for(int i=0;i<=3;i++)
 		{
 			xAttribute=vertex->Attribute("x");
@@ -100,18 +108,21 @@ bool gameConfig(string &szFileName)
 			r=atoi(rAttribute);
 			g=atoi(gAttribute);
 			b=atoi(bAttribute);
-			
 			d[i].x=x;d[i].y=y;d[i].z=z;
 			d[i].color=D3DCOLOR_XRGB(r,g,b);	
 			vertex=vertex->NextSiblingElement();
 		}
 		for(int i=0;i<NUM;i++){
-			demons[i].init(d,generateRandomSpeed());
+			demons[i]->init(generateRandomSpeed(),d,demons[i]->getVertexNum(),p,radius);
+			//demons[i].init(d,generateRandomSpeed());
 		}
 		//dSpeed=generateRandomSpeed();
 		//config the coordinates and color for elf
 		TiXmlElement *elfp=demonp->NextSiblingElement();
+		radius=(float)atof(elfp->Attribute("radius"));
 		vertex=elfp->FirstChildElement();
+		p=generatePosition(vertex);
+		vertex=vertex->NextSiblingElement();
 		for(int i=0;i<=3;i++)
 		{
 			xAttribute=vertex->Attribute("x");
@@ -125,14 +136,13 @@ bool gameConfig(string &szFileName)
 			z=(float)atof(zAttribute);
 			r=atoi(rAttribute);
 			g=atoi(gAttribute);
-			b=atoi(bAttribute);
-			
+			b=atoi(bAttribute);	
 			e[i].x=x;e[i].y=y;e[i].z=z;
 			e[i].color=D3DCOLOR_XRGB(r,g,b);
 			vertex=vertex->NextSiblingElement();
 		}
 		for(int i=0;i<ELFNUM;i++){
-			elfs[i].init(e,generateRandomSpeed());
+			elfs[i]->init(generateRandomSpeed(),e,elfs[i]->getVertexNum(),p,radius);
 		}
 
 	}
@@ -154,8 +164,16 @@ SPEED generateRandomSpeed()
 	//srand(time(NULL));
 	float x,y;
 	float i=-1;
-	x=(float)(rand()%10)/100.0f*pow(i,rand()%2+1);
-	y=(float)(rand()%10)/100.0f*pow(i,rand()%2+1);
+	x=(float)(rand()%10)/SPEEDPRECION*pow(i,rand()%2+1);
+	y=(float)(rand()%10)/SPEEDPRECION*pow(i,rand()%2+1);
 	speed.x=x;speed.y=y;
 	return speed;
+}
+
+POSITION generatePosition(TiXmlElement *vertex){
+    POSITION p;
+	p.x=(float)atof(vertex->Attribute("x"));
+	p.y=(float)atof(vertex->Attribute("y"));
+	p.z=(float)atof(vertex->Attribute("z"));
+	return p;
 }

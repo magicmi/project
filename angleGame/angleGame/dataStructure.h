@@ -3,8 +3,9 @@
 #define CUSTOMFVF (D3DFVF_XYZ|D3DFVF_DIFFUSE)
 #define NUM 14
 #define ELFNUM 20
-#define YSCOPE 55
-#define XSCOPE 75
+#define YSCOPE 57
+#define XSCOPE 76
+#define SPEEDPRECION 80.0f
 #include <iostream>
 #include "tinyxml.h"
 #include "tinystr.h"
@@ -20,5 +21,8 @@ struct CUSTOMVETIX{
 };
 struct SPEED{
 	FLOAT x,y;
+};
+struct POSITION {
+	FLOAT x,y,z;
 };
 #endif

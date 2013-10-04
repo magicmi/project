@@ -248,6 +248,10 @@
 				RelativePath=".\tinyxml.h"
 				>
 			</File>
+			<File
+				RelativePath=".\world.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="资源文件"
